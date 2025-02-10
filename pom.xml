@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.security</groupId>
-    <artifactId>vinclub-springboot</artifactId>
+    <artifactId>apphoaqua-springboot</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>vinclub-springboot</name>
-    <description>vinclub-springboot</description>
+    <name>apphoaqua-springboot</name>
+    <description>apphoaqua-springboot</description>
     <properties>
         <java.version>17</java.version>
     </properties>
