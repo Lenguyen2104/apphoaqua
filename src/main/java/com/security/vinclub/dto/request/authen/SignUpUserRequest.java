@@ -18,9 +18,6 @@ public class SignUpUserRequest {
     @NotBlank(message = "Họ & tên khoản không được trống!")
     private String fullName;
 
-    @NotBlank(message = "Mã tham chiếu không được trống!")
-    private String referenceCode;
-
     @NotBlank(message = "Số điện thoại không được trống!")
     private String phone;
 

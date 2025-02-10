@@ -37,11 +37,11 @@ public class AuthenticationController {
         return ResponseEntity.ok(authenticationService.refreshToken(request));
     }
 
-    @PostMapping("/change-password")
-    public ResponseEntity<Object> changePassword(@RequestBody ChangePasswordRequest request) {
-        this.validateRequest(request);
-        return ResponseEntity.ok(authenticationService.changePassword(request));
-    }
+//    @PostMapping("/change-password")
+//    public ResponseEntity<Object> changePassword(@RequestBody ChangePasswordRequest request) {
+//        this.validateRequest(request);
+//        return ResponseEntity.ok(authenticationService.changePassword(request));
+//    }
 
     @PostMapping("/token/check-expire/{token}")
     public ResponseEntity<Object> checkExpiredToken(@PathVariable("token") String token) {

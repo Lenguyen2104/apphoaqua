@@ -12,7 +12,7 @@ public interface AuthenticationService {
 
     ResponseBody<Object> signIn(SignInRequest signInRequest);
 
-    ResponseBody<Object> changePassword(ChangePasswordRequest changePasswordRequest);
+//    ResponseBody<Object> changePassword(ChangePasswordRequest changePasswordRequest);
 
     ResponseBody<Object> refreshToken(RefreshTokenRequest refreshTokenRequest);
 

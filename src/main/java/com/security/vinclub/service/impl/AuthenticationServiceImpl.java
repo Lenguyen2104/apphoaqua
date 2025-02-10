@@ -64,19 +64,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     .build();
             throw new ServiceSecurityException(HttpStatus.OK, PHONE_EXIST, errorMapping);
         }
-        List<ReferenceCode> referenceCodes = referenceCodeRepository.findByDeletedFalse();
-        List<String> refCodes = referenceCodes.stream().map(ReferenceCode::getReferenceCode).toList();
-        if(!refCodes.contains(request.getReferenceCode())) {
-            var errorMapping = ErrorData.builder()
-                    .errorKey1(REFERENCE_CODE_NOT_FOUND.getCode())
-                    .build();
-            throw new ServiceSecurityException(HttpStatus.OK, REFERENCE_CODE_NOT_FOUND, errorMapping);
-        }
 
         var role = roleRepository.findByName("USER");
         user.setId(UUID.randomUUID().toString().replaceAll("-", ""));
         user.setPhone(request.getPhone());
-        user.setReferenceCode(request.getReferenceCode());
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setRoleId(role.getId());
@@ -137,32 +128,32 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return response;
     }
 
-    @Override
-    public ResponseBody<Object> changePassword(ChangePasswordRequest request) {
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getOldPassword())
-            );
-        } catch (AuthenticationException e) {
-            var errorMapping = ErrorData.builder()
-                    .errorKey2(INVALID_CREDENTIALS.getCode())
-                    .build();
-            throw new ServiceSecurityException(HttpStatus.UNAUTHORIZED, INVALID_CREDENTIALS, errorMapping);
-        }
-        var user = userRepository.findByUsername(request.getUsername()).orElseThrow(() -> {
-            var errorMapping = ErrorData.builder()
-                    .errorKey2(USER_NOT_FOUND.getCode())
-                    .build();
-            return new ServiceSecurityException(HttpStatus.OK, USER_NOT_FOUND, errorMapping);
-        });
-
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        user.setCreatedDate(LocalDateTime.now());
-        userRepository.save(user);
-        var response = new ResponseBody<>();
-        response.setOperationSuccess(SUCCESS, user);
-        return response;
-    }
+//    @Override
+//    public ResponseBody<Object> changePassword(ChangePasswordRequest request) {
+//        try {
+//            authenticationManager.authenticate(
+//                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getOldPassword())
+//            );
+//        } catch (AuthenticationException e) {
+//            var errorMapping = ErrorData.builder()
+//                    .errorKey2(INVALID_CREDENTIALS.getCode())
+//                    .build();
+//            throw new ServiceSecurityException(HttpStatus.UNAUTHORIZED, INVALID_CREDENTIALS, errorMapping);
+//        }
+//        var user = userRepository.findByUsername(request.getUsername()).orElseThrow(() -> {
+//            var errorMapping = ErrorData.builder()
+//                    .errorKey2(USER_NOT_FOUND.getCode())
+//                    .build();
+//            return new ServiceSecurityException(HttpStatus.OK, USER_NOT_FOUND, errorMapping);
+//        });
+//
+//        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+//        user.setCreatedDate(LocalDateTime.now());
+//        userRepository.save(user);
+//        var response = new ResponseBody<>();
+//        response.setOperationSuccess(SUCCESS, user);
+//        return response;
+//    }
 
     public ResponseBody<Object> refreshToken(RefreshTokenRequest refreshTokenRequest) {
         String userEmail = jwtService.extractUsername(refreshTokenRequest.getToken());
