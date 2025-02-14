@@ -22,7 +22,8 @@ public enum ResponseStatus {
     TOKEN_EXPIRED("012", "Token is expired", "Mã thông báo đã hết hạn"),
     ACCOUNT_DEACTIVATED("013", "Account is deactivated", "Tài khoản đã bị vô hiệu hóa"),
     REFERENCE_CODE_NOT_FOUND("014", "Reference code not found", "Không tìm thấy mã tham chiếu"),
-    PHONE_EXIST("007", "Phone exists", "Số điện thoại đã tồn tại"),
+    PRODUCT_NAME_EXIST("015", "Product name exists", "Tên sản phẩm đã tồn tại"),
+    PHONE_EXIST("016", "Phone exists", "Số điện thoại đã tồn tại"),
     INVALID_CREDENTIALS("031", "Invalid Credentials", "Thông tin xác thực không hợp lệ"),
     INTERNAL_SERVER_ERROR("999", "Internal server error", "Lỗi máy chủ nội bộ");
 
