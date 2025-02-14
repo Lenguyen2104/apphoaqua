@@ -25,6 +25,7 @@ public enum ResponseStatus {
     PRODUCT_NAME_EXIST("017", "Product name exists", "Tên sản phẩm đã tồn tại"),
     BANNER_NOT_FOUND("015", "Banner not found", "Không tìm thấy banner"),
     VIDEO_SLIDER_NOT_FOUND("016", "Video slide not found", "Không tìm thấy video"),
+    PRODUCT_NAME_EXIST("017", "Product name exists", "Tên sản phẩm đã tồn tại"),
     PHONE_EXIST("007", "Phone exists", "Số điện thoại đã tồn tại"),
     INVALID_CREDENTIALS("031", "Invalid Credentials", "Thông tin xác thực không hợp lệ"),
     INTERNAL_SERVER_ERROR("999", "Internal server error", "Lỗi máy chủ nội bộ");
