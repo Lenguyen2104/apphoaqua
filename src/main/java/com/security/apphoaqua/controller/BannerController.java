@@ -15,9 +15,22 @@ import java.io.IOException;
 public class BannerController {
     private final BannerService bannerService;
 
-    @GetMapping("/admin/banner/all")
+    @GetMapping("/un_auth/banner/all")
     public ResponseEntity<Object> getAllBanner() {
         return ResponseEntity.ok(bannerService.getAllBanner());
+    }
+
+    @PostMapping(value = "/admin/banner", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<?> updateBanner(@RequestParam(value = "file", required = false) MultipartFile file,
+                                          @RequestParam(value  = "id") String id,
+                                          @RequestParam(value = "name", required = false) String name) throws IOException {
+        return ResponseEntity.ok(bannerService.updateBanner(file, id, name));
+    }
+
+    @GetMapping(value = "/un_auth/banner/file/download/{fileId}", produces = {MediaType.IMAGE_JPEG_VALUE})
+    @ResponseBody
+    public ResponseEntity<byte[]> downloadFileOriginalWithUrl(@PathVariable String fileId) throws IOException {
+        return ResponseEntity.ok(bannerService.downloadOriginalWithUrl(fileId));
     }
 
 }

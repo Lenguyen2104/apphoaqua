@@ -3,8 +3,10 @@ package com.security.apphoaqua.dto.response.banner;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
+import lombok.Getter;
 
 @Builder
+@Getter
 public class BannerAdminResponse {
     @NotNull
     @JsonProperty("id")
@@ -15,12 +17,16 @@ public class BannerAdminResponse {
     private String name;
 
     @NotNull
-    @JsonProperty("url")
-    private String url;
+    @JsonProperty("file_id")
+    private String fileId;
 
     @NotNull
     @JsonProperty("thumbnail")
     private String thumbnail;
+
+    @NotNull
+    @JsonProperty("spot")
+    private String spot;
 
     @NotNull
     @JsonProperty("activated")

@@ -1,14 +1,10 @@
 package com.security.apphoaqua.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.security.apphoaqua.repository.BannerRepository;
-import com.security.apphoaqua.repository.UserRepository;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Getter
@@ -24,8 +20,11 @@ public class Banner {
     @Column(name = "name", nullable = false, unique = true)
     private String name;
 
-    @Column(name = "url", length = 256)
-    private String url;
+    @Column(name = "file_id", length = 256)
+    private String fileId;
+
+    @Column(name = "spot")
+    private String spot;
 
     @NotNull
     @Column(nullable = false)

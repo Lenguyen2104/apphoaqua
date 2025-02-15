@@ -94,9 +94,9 @@ public class DataInitializer {
             log.info("Bảng Banner chưa có dữ liệu, tiến hành tạo 3 banner mặc định...");
 
             List<Banner> banners = List.of(
-                    new Banner(UUID.randomUUID().toString(), "CỔ ĐÔNG", "https://example.com/banner1.jpg", true, false),
-                    new Banner(UUID.randomUUID().toString(), "THANH TOÁN CHUYỂN HÀNG", "https://example.com/banner2.jpg", true, false),
-                    new Banner(UUID.randomUUID().toString(), "RÚT LỢI NHUẬN CHUYỂN HÀNG", "https://example.com/banner3.jpg", true, false)
+                    new Banner(UUID.randomUUID().toString(), "CỔ ĐÔNG", "1", null, true, false),
+                    new Banner(UUID.randomUUID().toString(), "THANH TOÁN CHUYỂN HÀNG", "2", null, true, false),
+                    new Banner(UUID.randomUUID().toString(), "RÚT LỢI NHUẬN CHUYỂN HÀNG", "3", null, true, false)
             );
 
             bannerRepository.saveAll(banners);
