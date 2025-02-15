@@ -25,7 +25,6 @@ public enum ResponseStatus {
     PRODUCT_NAME_EXIST("017", "Product name exists", "Tên sản phẩm đã tồn tại"),
     BANNER_NOT_FOUND("015", "Banner not found", "Không tìm thấy banner"),
     VIDEO_SLIDER_NOT_FOUND("016", "Video slide not found", "Không tìm thấy video"),
-    PRODUCT_NAME_EXIST("017", "Product name exists", "Tên sản phẩm đã tồn tại"),
     PHONE_EXIST("007", "Phone exists", "Số điện thoại đã tồn tại"),
     PRODUCT_NOT_FOUND("018", "Product not found", "Không tìm thấy sản phẩm"),
     UPLOAD_FILE_FAIL("019", "Upload file fail", "Tải tệp lên thất bại"),
