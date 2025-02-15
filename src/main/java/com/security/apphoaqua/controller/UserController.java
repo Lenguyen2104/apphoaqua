@@ -60,6 +60,16 @@ public class UserController {
         return ResponseEntity.ok(userService.deductFundFromUser(username, amount));
     }
 
+    @PutMapping("/user/shareholder/level")
+    public ResponseEntity<Object> updateShareholderLevel(@RequestParam String level) {
+        return ResponseEntity.ok(userService.updateShareholderLevel(level));
+    }
+
+    @GetMapping("/user/shareholder/level")
+    public ResponseEntity<Object> getShareholderLevel() {
+        return ResponseEntity.ok(userService.getShareholderLevel());
+    }
+
     private <T> void validateRequest(T request) {
         var violations = validator.validate(request);
         if (!violations.isEmpty()) throw new ServiceSecurityException(violations);
