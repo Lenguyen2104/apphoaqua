@@ -6,6 +6,7 @@ import com.security.apphoaqua.core.response.ErrorData;
 import com.security.apphoaqua.core.response.ResponseBody;
 import com.security.apphoaqua.dto.request.users.UpdateUserRequest;
 import com.security.apphoaqua.dto.request.users.UserSearchRequest;
+import com.security.apphoaqua.dto.response.users.ShareholderLevelResponse;
 import com.security.apphoaqua.dto.response.users.UserDetailResponse;
 import com.security.apphoaqua.entity.Role;
 import com.security.apphoaqua.entity.User;
@@ -321,6 +322,48 @@ public class UserServiceImpl implements UserService {
         var response = new ResponseBody<>();
         response.setOperationSuccess(SUCCESS, userModel);
 
+        return response;
+    }
+
+    @Override
+    public ResponseBody<Object> updateShareholderLevel(String level) {
+        String currentUserId = SecurityContext.getCurrentUserId();
+        var userModel = userRepository.findById(currentUserId).orElseThrow(() -> {
+            var errorMapping = ErrorData.builder()
+                    .errorKey1(USER_NOT_FOUND.getCode())
+                    .build();
+            return new ServiceSecurityException(HttpStatus.OK, USER_NOT_FOUND, errorMapping);
+        });
+         if (level.equalsIgnoreCase("2")) {
+            userModel.setShareholderLevel2(!userModel.isShareholderLevel2());
+        } else if (level.equalsIgnoreCase("3")) {
+            userModel.setShareholderLevel3(!userModel.isShareholderLevel3());
+        } else if (level.equalsIgnoreCase("4")) {
+            userModel.setShareholderLevel4(!userModel.isShareholderLevel4());
+        }
+        userRepository.save(userModel);
+        var response = new ResponseBody<>();
+        response.setOperationSuccess(SUCCESS, userModel);
+        return response;
+    }
+
+    @Override
+    public ResponseBody<Object> getShareholderLevel() {
+        String currentUserId = SecurityContext.getCurrentUserId();
+        var userModel = userRepository.findById(currentUserId).orElseThrow(() -> {
+            var errorMapping = ErrorData.builder()
+                    .errorKey1(USER_NOT_FOUND.getCode())
+                    .build();
+            return new ServiceSecurityException(HttpStatus.OK, USER_NOT_FOUND, errorMapping);
+        });
+        ShareholderLevelResponse shareholderLevelResponse = ShareholderLevelResponse.builder()
+                .shareholderLevel1(userModel.isShareholderLevel1())
+                .shareholderLevel2(userModel.isShareholderLevel2())
+                .shareholderLevel3(userModel.isShareholderLevel3())
+                .shareholderLevel4(userModel.isShareholderLevel4())
+                .build();
+        var response = new ResponseBody<>();
+        response.setOperationSuccess(SUCCESS, shareholderLevelResponse);
         return response;
     }
 

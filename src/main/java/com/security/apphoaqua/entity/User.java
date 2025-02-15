@@ -85,6 +85,19 @@ public class User implements UserDetails {
     @Column(name = "created_date")
     private LocalDateTime createdDate;
 
+    @NotNull
+    @Column(name = "shareholder_level_4", nullable = false)
+    private boolean shareholderLevel4 = false;
+    @NotNull
+    @Column(name = "shareholder_level_3", nullable = false)
+    private boolean shareholderLevel3 = false;
+    @NotNull
+    @Column(name = "shareholder_level_2", nullable = false)
+    private boolean shareholderLevel2 = false;
+    @NotNull
+    @Column(name = "shareholder_level_1", nullable = false)
+    private boolean shareholderLevel1 = true;
+
     protected User getCurrentUser() {
         return SecurityContext.getCurrentUser();
     }
