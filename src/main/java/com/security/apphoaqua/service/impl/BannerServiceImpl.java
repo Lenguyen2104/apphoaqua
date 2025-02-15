@@ -67,10 +67,14 @@ public class BannerServiceImpl implements BannerService {
                     .build();
             return new ServiceSecurityException(HttpStatus.OK, BANNER_NOT_FOUND, errorMapping);
         });
+
+        String oldFileId = banner.getFileId(); // 🔥 Lưu fileId cũ trước khi cập nhật
+
         if (name != null && !banner.getName().equals(name)) {
             banner.setName(name);
         }
-        if(file != null && !file.isEmpty()) {
+
+        if (file != null && !file.isEmpty()) {
             try {
                 String fileId = UUID.randomUUID().toString();
                 String fileName = fileId + "_" + file.getOriginalFilename();
@@ -90,18 +94,33 @@ public class BannerServiceImpl implements BannerService {
                 fileStorage.setFileExtension(getFileExtension(Objects.requireNonNull(file.getOriginalFilename())));
                 fileStorage.setCreateDate(LocalDateTime.now());
                 fileStorageRepository.save(fileStorage);
+
                 banner.setFileId(fileId);
             } catch (IOException e) {
                 throw new RuntimeException("Failed to upload file: " + e.getMessage());
             }
         }
 
-        bannerRepository.save(banner);
+        bannerRepository.save(banner); // 🔥 Lưu banner vào DB trước
+
+        if (oldFileId != null) {
+            var oldFile = fileStorageRepository.findById(oldFileId);
+            if (oldFile.isPresent()) {
+                try {
+                    Path oldFilePath = Paths.get(oldFile.get().getFileDirectory());
+                    Files.deleteIfExists(oldFilePath);
+                    fileStorageRepository.deleteById(oldFileId);
+                } catch (IOException e) {
+                    System.err.println("🚨 Lỗi khi xóa file cũ: " + e.getMessage());
+                }
+            }
+        }
 
         var response = new ResponseBody<>();
         response.setOperationSuccess(SUCCESS, banner);
         return response;
     }
+
 
     @Override
     public byte[] downloadOriginalWithUrl(String fileId) throws IOException {
