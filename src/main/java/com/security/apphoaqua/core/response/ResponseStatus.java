@@ -23,6 +23,7 @@ public enum ResponseStatus {
     ACCOUNT_DEACTIVATED("013", "Account is deactivated", "Tài khoản đã bị vô hiệu hóa"),
     REFERENCE_CODE_NOT_FOUND("014", "Reference code not found", "Không tìm thấy mã tham chiếu"),
     BANNER_NOT_FOUND("015", "Banner not found", "Không tìm thấy banner"),
+    VIDEO_SLIDER_NOT_FOUND("016", "Video slide not found", "Không tìm thấy video"),
     PHONE_EXIST("007", "Phone exists", "Số điện thoại đã tồn tại"),
     INVALID_CREDENTIALS("031", "Invalid Credentials", "Thông tin xác thực không hợp lệ"),
     INTERNAL_SERVER_ERROR("999", "Internal server error", "Lỗi máy chủ nội bộ");
