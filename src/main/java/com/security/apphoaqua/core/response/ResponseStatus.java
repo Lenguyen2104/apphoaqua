@@ -27,6 +27,8 @@ public enum ResponseStatus {
     VIDEO_SLIDER_NOT_FOUND("016", "Video slide not found", "Không tìm thấy video"),
     PRODUCT_NAME_EXIST("017", "Product name exists", "Tên sản phẩm đã tồn tại"),
     PHONE_EXIST("007", "Phone exists", "Số điện thoại đã tồn tại"),
+    PRODUCT_NOT_FOUND("018", "Product not found", "Không tìm thấy sản phẩm"),
+    UPLOAD_FILE_FAIL("019", "Upload file fail", "Tải tệp lên thất bại"),
     INVALID_CREDENTIALS("031", "Invalid Credentials", "Thông tin xác thực không hợp lệ"),
     INTERNAL_SERVER_ERROR("999", "Internal server error", "Lỗi máy chủ nội bộ");
 

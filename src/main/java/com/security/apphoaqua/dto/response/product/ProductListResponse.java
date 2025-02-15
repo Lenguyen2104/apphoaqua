@@ -1,13 +1,13 @@
 package com.security.apphoaqua.dto.response.product;
 
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -15,20 +15,12 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class ProductListResponse {
 
-    @JsonProperty("product_id")
     private String productId;
-
-    private String name;
-
+    private String productName;
     private BigDecimal price;
-
-    @JsonProperty("interest_rate")
     private Double interestRate;
-
     private String imageId;
-
-    private String level;
-
-    private String status;
+    private int level;
+    private LocalDateTime createDate;
 }
 

@@ -15,7 +15,11 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CreateProductRequest {
+public class UpdateProductRequest {
+
+    @NotBlank(message = "Product id is not blank")
+    private String productId;
+
     @NotBlank(message = "Tên sản phẩm không được để trống")
     private String productName;
 
