@@ -15,4 +15,6 @@ public interface WithdrawService {
     ResponseBody<Object> getPendingWithdraws(Pageable pageable);
 
     ResponseBody<Object> searchPendingWithdraws(String searchText, Pageable pageable);
+
+    ResponseBody<Object> getBankInfoToWithdraw();
 }

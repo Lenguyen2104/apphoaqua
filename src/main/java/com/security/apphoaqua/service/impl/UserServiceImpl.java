@@ -367,6 +367,45 @@ public class UserServiceImpl implements UserService {
         return response;
     }
 
+    @Override
+    public ResponseBody<Object> getCurrentUserDetail() {
+        String userId = SecurityContext.getCurrentUserId();
+        var user = userRepository.findById(userId).orElseThrow(() -> {
+            var errorMapping = ErrorData.builder()
+                    .errorKey1(USER_NOT_FOUND.getCode())
+                    .build();
+            return new ServiceSecurityException(HttpStatus.OK, USER_NOT_FOUND, errorMapping);
+        });
+
+        Role role = roleRepository.findById(user.getRoleId()).orElseThrow(() -> {
+            var errorMapping = ErrorData.builder()
+                    .errorKey1(ROLE_NOT_FOUND.getCode())
+                    .build();
+            return new ServiceSecurityException(HttpStatus.OK, ROLE_NOT_FOUND, errorMapping);
+        });
+
+        UserDetailResponse userDetailResponse = UserDetailResponse.builder()
+                .userId(user.getId())
+                .username(user.getUsername())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .roleId(user.getRoleId())
+                .roleName(role.getName())
+                .imageUrl(user.getImageId())
+                .totalAmount(user.getTotalAmount())
+                .lastDepositAmount(user.getLastDepositAmount())
+                .lastDepositDate(user.getLastDepositDate())
+                .lastWithDrawAmount(user.getLastWithDrawAmount())
+                .lastWithdrawDate(user.getLastWithdrawDate())
+                .createDate(user.getCreatedDate())
+                .activated(user.isActivated())
+                .build();
+        var response = new ResponseBody<>();
+        response.setOperationSuccess(SUCCESS, userDetailResponse);
+        return response;
+    }
+
     public static BigDecimal safeConvert(String str) {
         try {
             return new BigDecimal(str);
