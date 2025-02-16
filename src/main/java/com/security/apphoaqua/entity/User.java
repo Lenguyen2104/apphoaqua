@@ -68,7 +68,7 @@ public class User implements UserDetails {
     private String roleId;
 
     @Column(name = "total_amount")
-    private BigDecimal totalAmount;
+    private BigDecimal totalAmount = BigDecimal.ZERO;
 
     @Column(name = "last_deposit_date")
     private LocalDateTime lastDepositDate;

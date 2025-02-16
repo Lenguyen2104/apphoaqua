@@ -23,6 +23,11 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserIdDetail(userId));
     }
 
+    @GetMapping("/user/detail")
+    public ResponseEntity<Object> getCurrentUserDetail() {
+        return ResponseEntity.ok(userService.getCurrentUserDetail());
+    }
+
     @PostMapping("/user/update")
     public ResponseEntity<Object> updateUserDetail(@RequestBody UpdateUserRequest request) {
         this.validateRequest(request);

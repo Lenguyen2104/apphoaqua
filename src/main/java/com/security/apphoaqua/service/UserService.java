@@ -24,4 +24,6 @@ public interface UserService {
     ResponseBody<Object> updateShareholderLevel(String level);
 
     ResponseBody<Object> getShareholderLevel();
+
+    ResponseBody<Object> getCurrentUserDetail();
 }

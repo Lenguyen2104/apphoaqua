@@ -70,6 +70,11 @@ public class WithdrawController {
         return ResponseEntity.ok(withdrawService.searchPendingWithdraws(searchText, pageable));
     }
 
+    @GetMapping("/user/withdraw/info")
+    public ResponseEntity<Object> getBankInfoToWithdraw() {
+        return ResponseEntity.ok(withdrawService.getBankInfoToWithdraw());
+    }
+
 
     private <T> void validateRequest(T request) {
         var violations = validator.validate(request);
