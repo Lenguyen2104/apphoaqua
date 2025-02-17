@@ -2,10 +2,13 @@ package com.security.apphoaqua.service.impl;
 
 import com.security.apphoaqua.core.response.ErrorData;
 import com.security.apphoaqua.core.response.ResponseBody;
+import com.security.apphoaqua.dto.request.order.AllOrderRequest;
 import com.security.apphoaqua.dto.request.order.BillOrderRequest;
 import com.security.apphoaqua.dto.request.order.CreateOrderRequest;
+import com.security.apphoaqua.dto.response.order.AllOrderResponse;
 import com.security.apphoaqua.dto.response.order.BillOrderResponse;
 import com.security.apphoaqua.dto.response.order.OrderResponse;
+import com.security.apphoaqua.dto.response.order.TodayOrderResponse;
 import com.security.apphoaqua.entity.Order;
 import com.security.apphoaqua.enumeration.StatusProduct;
 import com.security.apphoaqua.exception.ServiceSecurityException;
@@ -21,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -111,7 +116,7 @@ public class OrderServiceImpl implements OrderService {
                     .build();
             return new ServiceSecurityException(HttpStatus.OK, USER_NOT_FOUND, errorMapping);
         });
-        if (user.getTotalAmount().compareTo(order.getTotalOrderAmount()) < 0) {
+        if (user.getTotalAmount().compareTo(request.getTotalOrderAmount()) < 0) {
             var errorMapping = ErrorData.builder()
                     .errorKey1(INSUFFICIENT_BALANCE.getCode())
                     .build();
@@ -123,7 +128,7 @@ public class OrderServiceImpl implements OrderService {
         var totalRefundAmount = request.getTotalOrderAmount().add(profit);
         order.setTotalOrderAmount(request.getTotalOrderAmount());
         order.setProfit(profit);
-        order.setReceivedTime(LocalDateTime.now().minusDays(2));
+        order.setReceivedTime(LocalDateTime.now().plusDays(2));
         order.setTotalRefundAmount(totalRefundAmount);
         order.setStatus(StatusProduct.COMPLETE.getValue());
         order.setOrderCode(generateOrderCode());
@@ -153,10 +158,81 @@ public class OrderServiceImpl implements OrderService {
         return response;
     }
 
+    @Override
+    public ResponseBody<Object> todayOrder(String userId) {
+        var userModel = userRepository.findById(userId).orElseThrow(() -> {
+            var errorMapping = ErrorData.builder()
+                    .errorKey1(USER_NOT_FOUND.getCode())
+                    .build();
+            return new ServiceSecurityException(HttpStatus.OK, USER_NOT_FOUND, errorMapping);
+        });
+        List<Order> ordersComplete = orderRepository.findAllByUserIdAndStatus(userId, StatusProduct.COMPLETE.getValue());
+        BigDecimal profitToday = ordersComplete.stream().map(Order::getProfit).reduce(BigDecimal.ZERO, BigDecimal::add);
+        List<Order> ordersWaitForCompletion = orderRepository.findAllByUserIdAndStatus(userId, StatusProduct.WAIT_FOR_COMPLETION.getValue());
+
+        BigDecimal pendingAmount = ordersWaitForCompletion.stream().map(Order::getTotalOrderAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+        TodayOrderResponse todayOrderResponse = TodayOrderResponse.builder()
+                .accountBalance(userModel.getTotalAmount())
+                .profitToday(profitToday)
+                .numberOfCompleteApplications(ordersComplete.size())
+                .pendingAmount(pendingAmount)
+                .build();
+        var response = new ResponseBody<>();
+        response.setOperationSuccess(SUCCESS, todayOrderResponse);
+        return response;
+    }
+
+    @Override
+    public ResponseBody<Object> allOrders(AllOrderRequest request) {
+        List<AllOrderResponse> orderResponse;
+        if (request.getStatus() == null) {
+            List<Order> orders = orderRepository.findAllByUserId(request.getUserId());
+            orderResponse = orders.stream().map(order -> AllOrderResponse.builder()
+                    .orderId(order.getOrderId())
+                    .userId(order.getUserId())
+                    .productId(order.getProductId())
+                    .productImage(order.getProductImage())
+                    .status(order.getStatus())
+                    .totalOrderAmount(order.getTotalOrderAmount())
+                    .profit(order.getProfit())
+                    .totalRefundAmount(order.getTotalRefundAmount())
+                    .interestRate(countInterestRate(order.getTotalOrderAmount(), order.getProfit()))
+                    .productName(productRepository.findById(order.getProductId()).get().getProductName())
+                    .build()).toList();
+        } else {
+            List<Order> orders = orderRepository.findAllByUserIdAndStatus(request.getUserId(), request.getStatus());
+            orderResponse = orders.stream().map(order -> AllOrderResponse.builder()
+                    .orderId(order.getOrderId())
+                    .userId(order.getUserId())
+                    .productId(order.getProductId())
+                    .productImage(order.getProductImage())
+                    .status(order.getStatus())
+                    .totalOrderAmount(order.getTotalOrderAmount())
+                    .profit(order.getProfit())
+                    .totalRefundAmount(order.getTotalRefundAmount())
+                    .interestRate(countInterestRate(order.getTotalOrderAmount(), order.getProfit()))
+                    .productName(productRepository.findById(order.getProductId()).get().getProductName())
+                    .build()).toList();
+        }
+        var response = new ResponseBody<>();
+        response.setOperationSuccess(SUCCESS, orderResponse);
+        return response;
+    }
+
     public static String generateOrderCode() {
         Random random = new Random();
         int randomNumber = random.nextInt(1000000);
         String formattedNumber = String.format("%06d", randomNumber);
         return "DH" + formattedNumber;
+    }
+
+    private Double countInterestRate(BigDecimal totalOrderAmount, BigDecimal profit) {
+        Double interestRate = 0.0;
+        if (totalOrderAmount != null && totalOrderAmount.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal rate = profit.divide(totalOrderAmount, 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100));
+            interestRate = rate.doubleValue();
+        }
+        return interestRate;
     }
 }
