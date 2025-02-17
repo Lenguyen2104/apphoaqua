@@ -8,9 +8,12 @@ import com.security.apphoaqua.dto.request.product.UpdateProductRequest;
 import com.security.apphoaqua.dto.request.product.UploadProductImageRequest;
 import com.security.apphoaqua.dto.response.product.ProductListResponse;
 import com.security.apphoaqua.entity.FileStorage;
+import com.security.apphoaqua.entity.Order;
 import com.security.apphoaqua.entity.Product;
+import com.security.apphoaqua.enumeration.StatusProduct;
 import com.security.apphoaqua.exception.ServiceSecurityException;
 import com.security.apphoaqua.repository.FileStorageRepository;
+import com.security.apphoaqua.repository.OrderRepository;
 import com.security.apphoaqua.repository.ProductRepository;
 import com.security.apphoaqua.service.ProductService;
 import com.security.apphoaqua.utils.FileHelperService;
@@ -21,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +50,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final FileStorageRepository fileStorageRepository;
     private final FileHelperService fileHelperService;
+    private final OrderRepository orderRepository;
 
     @Override
     public ResponseBody<Object> getAllProduct() {
@@ -92,8 +97,10 @@ public class ProductServiceImpl implements ProductService {
         return response;
     }
 
+    @Transactional
     @Override
     public ResponseBody<Object> updateProduct(UpdateProductRequest request) {
+        var orderList = new ArrayList<Order>();
         var productsModel = productRepository.findById(request.getProductId()).orElseThrow(() -> {
             var errorMapping = ErrorData.builder()
                     .errorKey1(PRODUCT_NOT_FOUND.getCode())
@@ -107,6 +114,11 @@ public class ProductServiceImpl implements ProductService {
             productsModel.setImageId(request.getImageId());
         } else {
             productsModel.setImageId(BASE_URL + "/api/v1/un_auth/products/download/original/" + request.getImageId());
+            orderRepository.findAllByProductId(request.getProductId()).forEach(order -> {
+                order.setProductImage(BASE_URL + "/api/v1/un_auth/products/download/original/" + request.getImageId());
+                orderList.add(order);
+            });
+            orderRepository.saveAll(orderList);
         }
         productsModel.setProductName(request.getProductName());
         productsModel.setPrice(request.getPrice());
@@ -123,6 +135,7 @@ public class ProductServiceImpl implements ProductService {
         return response;
     }
 
+    @Transactional
     @Override
     public ResponseBody<Object> deleteProductById(String productId) {
         productRepository.findById(productId).orElseThrow(() -> {
@@ -132,6 +145,8 @@ public class ProductServiceImpl implements ProductService {
             return new ServiceSecurityException(HttpStatus.OK, PRODUCT_NOT_FOUND, errorMapping);
         });
         productRepository.deleteById(productId);
+
+        orderRepository.deleteAllByProductIdAndStatus(productId, StatusProduct.WAIT_FOR_COMPLETION.getValue());
 
         var json = new ObjectMapper().createObjectNode();
         json.putPOJO("productId", productId);

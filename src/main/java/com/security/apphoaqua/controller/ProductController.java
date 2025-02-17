@@ -25,24 +25,24 @@ public class ProductController {
         return ResponseEntity.ok(productService.getAllProduct());
     }
 
-    @PostMapping("/admin/products/create")
+    @PostMapping("/un_auth/products/create")
     public ResponseEntity<Object> createProduct(@RequestBody CreateProductRequest request) {
 //        this.validateRequest(request);
         return ResponseEntity.ok(productService.createProduct(request));
     }
 
-    @PostMapping("/admin/products/update")
+    @PostMapping("/un_auth/products/update")
     public ResponseEntity<Object> updateProduct(@RequestBody UpdateProductRequest request) {
 //        this.validateRequest(request);
         return ResponseEntity.ok(productService.updateProduct(request));
     }
 
-    @DeleteMapping("/admin/products/delete/{product_id}")
+    @DeleteMapping("/un_auth/products/delete/{product_id}")
     public ResponseEntity<Object> deleteProduct(@PathVariable("product_id") String productId) {
         return ResponseEntity.ok(productService.deleteProductById(productId));
     }
 
-    @PostMapping(value = "/admin/products/upload_image",
+    @PostMapping(value = "/un_auth/products/upload_image",
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<Object> uploadFileStorage(UploadProductImageRequest request) {

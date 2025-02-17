@@ -13,8 +13,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CreateOrderRequest {
-    private String userId;
-    private String productId;
+public class BillOrderRequest {
+    private String orderId;
     private BigDecimal totalOrderAmount;
 }

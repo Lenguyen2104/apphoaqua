@@ -22,6 +22,12 @@ public class Order {
     @Column(name = "order_id", nullable = false, unique = true)
     private String orderId;
 
+    @Column(name = "user_id")
+    private String userId;
+
+    @Column(name = "product_id")
+    private String productId;
+
     @Column(name = "received_time")
     private LocalDateTime receivedTime;
 
@@ -39,6 +45,9 @@ public class Order {
 
     @Column(name = "status")
     private String status;
+
+    @Column(name = "order_code")
+    private String orderCode;
 
     @Column(name = "create_date")
     private LocalDateTime createDate;
