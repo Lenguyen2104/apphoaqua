@@ -1,5 +1,6 @@
 package com.security.apphoaqua.controller;
 
+import com.security.apphoaqua.dto.request.authen.ChangePasswordRequest;
 import com.security.apphoaqua.dto.request.authen.RefreshTokenRequest;
 import com.security.apphoaqua.dto.request.authen.SignInRequest;
 import com.security.apphoaqua.dto.request.authen.SignUpUserRequest;
@@ -36,11 +37,17 @@ public class AuthenticationController {
         return ResponseEntity.ok(authenticationService.refreshToken(request));
     }
 
-//    @PostMapping("/change-password")
-//    public ResponseEntity<Object> changePassword(@RequestBody ChangePasswordRequest request) {
-//        this.validateRequest(request);
-//        return ResponseEntity.ok(authenticationService.changePassword(request));
-//    }
+    @PostMapping("/change-password")
+    public ResponseEntity<Object> changePassword(@RequestBody ChangePasswordRequest request) {
+        this.validateRequest(request);
+        return ResponseEntity.ok(authenticationService.changePassword(request));
+    }
+
+
+    @PostMapping("/admin/new")
+    public ResponseEntity<Object> createNewAdmin(@RequestBody SignUpUserRequest request) {
+        return ResponseEntity.ok(authenticationService.createNewAdmin(request));
+    }
 
     @PostMapping("/token/check-expire/{token}")
     public ResponseEntity<Object> checkExpiredToken(@PathVariable("token") String token) {

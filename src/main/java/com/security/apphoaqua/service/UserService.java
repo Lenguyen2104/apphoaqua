@@ -26,4 +26,6 @@ public interface UserService {
     ResponseBody<Object> getShareholderLevel();
 
     ResponseBody<Object> getCurrentUserDetail();
+
+    ResponseBody<Object> getAllAdmin(UserSearchRequest request);
 }

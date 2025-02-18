@@ -75,6 +75,12 @@ public class UserController {
         return ResponseEntity.ok(userService.getShareholderLevel());
     }
 
+    @PostMapping("/admin/all")
+    public ResponseEntity<Object> getAllAdmin(@RequestBody UserSearchRequest request) {
+        this.validateRequest(request);
+        return ResponseEntity.ok(userService.getAllAdmin(request));
+    }
+
     private <T> void validateRequest(T request) {
         var violations = validator.validate(request);
         if (!violations.isEmpty()) throw new ServiceSecurityException(violations);

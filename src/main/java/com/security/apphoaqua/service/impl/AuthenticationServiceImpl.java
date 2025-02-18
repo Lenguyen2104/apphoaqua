@@ -1,7 +1,9 @@
 package com.security.apphoaqua.service.impl;
 
+import com.security.apphoaqua.common.SecurityContext;
 import com.security.apphoaqua.core.response.ErrorData;
 import com.security.apphoaqua.core.response.ResponseBody;
+import com.security.apphoaqua.dto.request.authen.ChangePasswordRequest;
 import com.security.apphoaqua.dto.request.authen.RefreshTokenRequest;
 import com.security.apphoaqua.dto.request.authen.SignInRequest;
 import com.security.apphoaqua.dto.request.authen.SignUpUserRequest;
@@ -125,32 +127,33 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return response;
     }
 
-//    @Override
-//    public ResponseBody<Object> changePassword(ChangePasswordRequest request) {
-//        try {
-//            authenticationManager.authenticate(
-//                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getOldPassword())
-//            );
-//        } catch (AuthenticationException e) {
-//            var errorMapping = ErrorData.builder()
-//                    .errorKey2(INVALID_CREDENTIALS.getCode())
-//                    .build();
-//            throw new ServiceSecurityException(HttpStatus.UNAUTHORIZED, INVALID_CREDENTIALS, errorMapping);
-//        }
-//        var user = userRepository.findByUsername(request.getUsername()).orElseThrow(() -> {
-//            var errorMapping = ErrorData.builder()
-//                    .errorKey2(USER_NOT_FOUND.getCode())
-//                    .build();
-//            return new ServiceSecurityException(HttpStatus.OK, USER_NOT_FOUND, errorMapping);
-//        });
-//
-//        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-//        user.setCreatedDate(LocalDateTime.now());
-//        userRepository.save(user);
-//        var response = new ResponseBody<>();
-//        response.setOperationSuccess(SUCCESS, user);
-//        return response;
-//    }
+    @Override
+    public ResponseBody<Object> changePassword(ChangePasswordRequest request) {
+        String currentUserId = SecurityContext.getCurrentUserId();
+        var currentUser = userRepository.findById(currentUserId).orElseThrow(() -> {
+            var errorMapping = ErrorData.builder()
+                    .errorKey1(USER_NOT_FOUND.getCode())
+                    .build();
+            return new ServiceSecurityException(HttpStatus.OK, USER_NOT_FOUND, errorMapping);
+        });
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(currentUser.getUsername(), request.getOldPassword())
+            );
+        } catch (AuthenticationException e) {
+            var errorMapping = ErrorData.builder()
+                    .errorKey2(INVALID_CREDENTIALS.getCode())
+                    .build();
+            throw new ServiceSecurityException(HttpStatus.UNAUTHORIZED, INVALID_CREDENTIALS, errorMapping);
+        }
+
+        currentUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        currentUser.setCreatedDate(LocalDateTime.now());
+        userRepository.save(currentUser);
+        var response = new ResponseBody<>();
+        response.setOperationSuccess(SUCCESS, currentUser);
+        return response;
+    }
 
     public ResponseBody<Object> refreshToken(RefreshTokenRequest refreshTokenRequest) {
         String userEmail = jwtService.extractUsername(refreshTokenRequest.getToken());
@@ -191,6 +194,42 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
         var response = new ResponseBody<>();
         response.setOperationSuccess(SUCCESS, true);
+        return response;
+    }
+
+    @Override
+    public ResponseBody<Object> createNewAdmin(SignUpUserRequest request) {
+        User user = new User();
+        var isUsernameExisted = userRepository.existsByUsername(request.getUsername());
+
+        if (isUsernameExisted) {
+            var errorMapping = ErrorData.builder()
+                    .errorKey1(USER_NAME_EXIST.getCode())
+                    .build();
+            throw new ServiceSecurityException(HttpStatus.OK, USER_NAME_EXIST, errorMapping);
+        }
+
+        var isPhoneExisted = userRepository.existsByPhone(request.getPhone());
+
+        if (isPhoneExisted) {
+            var errorMapping = ErrorData.builder()
+                    .errorKey1(PHONE_EXIST.getCode())
+                    .build();
+            throw new ServiceSecurityException(HttpStatus.OK, PHONE_EXIST, errorMapping);
+        }
+
+        var role = roleRepository.findByName("ADMIN");
+        user.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+        user.setPhone(request.getPhone());
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setRoleId(role.getId());
+        user.setFullName(request.getFullName());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setCreatedDate(LocalDateTime.now());
+        userRepository.save(user);
+        var response = new ResponseBody<>();
+        response.setOperationSuccess(SUCCESS, user);
         return response;
     }
 }

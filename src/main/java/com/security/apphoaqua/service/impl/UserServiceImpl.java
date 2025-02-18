@@ -406,6 +406,73 @@ public class UserServiceImpl implements UserService {
         return response;
     }
 
+    @Override
+    public ResponseBody<Object> getAllAdmin(UserSearchRequest request) {
+        var mapper = new ObjectMapper();
+        var json = mapper.createObjectNode();
+
+        String currentUserId = SecurityContext.getCurrentUserId();
+        var userModel = userRepository.findById(currentUserId).orElseThrow(() -> {
+            var errorMapping = ErrorData.builder()
+                    .errorKey1(USER_NOT_FOUND.getCode())
+                    .build();
+            return new ServiceSecurityException(HttpStatus.OK, USER_NOT_FOUND, errorMapping);
+        });
+        Pageable pageable;
+
+        if (request.getSortBy() == null || request.getSortBy().isEmpty()) {
+            request.setSortBy(DEFAULT_SORT_FIELD);
+        }
+
+        if (request.getSortDirection() == null || request.getSortDirection().isEmpty()) {
+            request.setSortDirection("asc");
+        }
+
+        if (request.getSortDirection().equalsIgnoreCase("desc")) {
+            pageable = PageRequest.of(Integer.parseInt(request.getPageNumber()) - 1, Integer.parseInt(request.getPageSize()), Sort.by(request.getSortBy()).descending());
+        } else {
+            pageable = PageRequest.of(Integer.parseInt(request.getPageNumber()) - 1, Integer.parseInt(request.getPageSize()), Sort.by(request.getSortBy()).ascending());
+        }
+
+        Page<User> listUserPage = userRepository.findAllAdmins(currentUserId, userModel.getRoleId(), pageable);
+
+        var users = listUserPage.getContent();
+        List<String> roleIds = users.stream().map(User::getRoleId).toList();
+
+        List<Role> roles = roleRepository.findByIdIn(roleIds);
+        Map<String, String> roleMap = roles.stream()
+                .collect(Collectors.toMap(Role::getId, Role::getName));
+
+        var userResponse = users.stream().map(user ->
+                UserDetailResponse.builder()
+                        .userId(user.getId())
+                        .username(user.getUsername())
+                        .fullName(user.getFullName())
+                        .email(user.getEmail())
+                        .phone(user.getPhone())
+                        .roleId(user.getRoleId())
+                        .roleName(roleMap.get(user.getRoleId()))
+                        .imageUrl(user.getImageId())
+                        .totalAmount(user.getTotalAmount())
+                        .lastDepositAmount(user.getLastDepositAmount())
+                        .lastDepositDate(user.getLastDepositDate())
+                        .lastWithDrawAmount(user.getLastWithDrawAmount())
+                        .lastWithdrawDate(user.getLastWithdrawDate())
+                        .createDate(user.getCreatedDate())
+                        .activated(user.isActivated())
+                        .build());
+
+        json.putPOJO("page_number", request.getPageNumber());
+        json.putPOJO("total_records", listUserPage.getTotalElements());
+        json.putPOJO("page_size", request.getPageSize());
+        json.putPOJO("list_user", userResponse);
+        json.putPOJO("total_page", listUserPage.getTotalPages());
+
+        var response = new ResponseBody<>();
+        response.setOperationSuccess(SUCCESS, json);
+        return response;
+    }
+
     public static BigDecimal safeConvert(String str) {
         try {
             return new BigDecimal(str);
