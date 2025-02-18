@@ -86,11 +86,6 @@ public class WithdrawServiceImpl implements WithdrawService {
             return new ServiceSecurityException(HttpStatus.OK, USER_NOT_FOUND, errorMapping);
         });
 
-        BigDecimal newTotalAmount = user.getTotalAmount().subtract(withdraw.getAmount());
-        user.setTotalAmount(newTotalAmount);
-        user.setLastDepositAmount(withdraw.getAmount());
-        user.setLastDepositDate(LocalDateTime.now());
-
         withdrawRepository.save(withdraw);
         userRepository.save(user);
 
@@ -109,9 +104,18 @@ public class WithdrawServiceImpl implements WithdrawService {
             return new ServiceSecurityException(HttpStatus.OK, WITHDRAW_NOT_FOUND, errorMapping);
         });
 
+        var user = userRepository.findById(withdraw.getUserId()).orElseThrow(() -> {
+            var errorMapping = ErrorData.builder()
+                    .errorKey1(USER_NOT_FOUND.getCode())
+                    .build();
+            return new ServiceSecurityException(HttpStatus.OK, USER_NOT_FOUND, errorMapping);
+        });
+
+        BigDecimal newTotalAmount = user.getTotalAmount().add(withdraw.getAmount());
+        user.setTotalAmount(newTotalAmount);
         withdraw.setStatus(AppovalStatusEnum.REJECTED);
         withdrawRepository.save(withdraw);
-
+        userRepository.save(user);
         var response = new ResponseBody<>();
         response.setOperationSuccess(SUCCESS, id);
         return response;
