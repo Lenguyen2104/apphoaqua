@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -41,4 +42,6 @@ public interface UserRepository extends JpaRepository<User, String> {
             "AND u.deleted = FALSE AND u.id != :currentUserId "
     )
     Page<User> searchAllUsers(String currentUserId, String searchText, Pageable pageable);
+
+    List<User> findByIdIn(List<String> userIds);
 }

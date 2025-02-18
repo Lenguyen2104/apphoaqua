@@ -19,11 +19,15 @@ import java.time.LocalDateTime;
 public class Product {
 
     @Id
+    @Column(name = "product_id", nullable = false, unique = true)
     private String productId;
+
+    @Column(name = "product_name")
     private String productName;
     private BigDecimal price;
     @Column(name = "interest_rate")
     private Double interestRate;
+    @Column(name = "image_id")
     private String imageId;
     private int level;
     @Column(name = "create_date")

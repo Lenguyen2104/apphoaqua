@@ -30,6 +30,7 @@ public enum ResponseStatus {
     UPLOAD_FILE_FAIL("019", "Upload file fail", "Tải tệp lên thất bại"),
     BANK_NOT_FOUND("020", "Bank not found", "Không tìm thấy thông tin ngân hàng"),
     INSUFFICIENT_BALANCE("021", "Insufficient balance", "Số dư không đủ"),
+    ORDER_NOT_FOUND("022",  "Order not found", "Không tìm thấy đơn hàng"),
     INVALID_CREDENTIALS("031", "Invalid Credentials", "Thông tin xác thực không hợp lệ"),
     INTERNAL_SERVER_ERROR("999", "Internal server error", "Lỗi máy chủ nội bộ");
 
