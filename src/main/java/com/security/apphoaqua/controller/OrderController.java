@@ -3,6 +3,7 @@ package com.security.apphoaqua.controller;
 import com.security.apphoaqua.dto.request.order.AllOrderRequest;
 import com.security.apphoaqua.dto.request.order.BillOrderRequest;
 import com.security.apphoaqua.dto.request.order.CreateOrderRequest;
+import com.security.apphoaqua.dto.request.order.OrderSearchRequest;
 import com.security.apphoaqua.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -32,5 +33,10 @@ public class OrderController {
     @PostMapping("/un_auth/orders/all")
     public ResponseEntity<Object> allOrders(@RequestBody AllOrderRequest request) {
         return ResponseEntity.ok(orderService.allOrders(request));
+    }
+
+    @PostMapping("/un_auth/order/get_all")
+    public ResponseEntity<Object> getAllOrder(@RequestBody OrderSearchRequest request) {
+        return ResponseEntity.ok(orderService.getAllOrders(request));
     }
 }

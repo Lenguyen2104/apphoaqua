@@ -1,15 +1,15 @@
 package com.security.apphoaqua.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.security.apphoaqua.core.response.ErrorData;
 import com.security.apphoaqua.core.response.ResponseBody;
 import com.security.apphoaqua.dto.request.order.AllOrderRequest;
 import com.security.apphoaqua.dto.request.order.BillOrderRequest;
 import com.security.apphoaqua.dto.request.order.CreateOrderRequest;
-import com.security.apphoaqua.dto.response.order.AllOrderResponse;
-import com.security.apphoaqua.dto.response.order.BillOrderResponse;
-import com.security.apphoaqua.dto.response.order.OrderResponse;
-import com.security.apphoaqua.dto.response.order.TodayOrderResponse;
+import com.security.apphoaqua.dto.request.order.OrderSearchRequest;
+import com.security.apphoaqua.dto.response.order.*;
 import com.security.apphoaqua.entity.Order;
+import com.security.apphoaqua.entity.User;
 import com.security.apphoaqua.enumeration.StatusProduct;
 import com.security.apphoaqua.exception.ServiceSecurityException;
 import com.security.apphoaqua.repository.OrderRepository;
@@ -17,6 +17,10 @@ import com.security.apphoaqua.repository.ProductRepository;
 import com.security.apphoaqua.repository.UserRepository;
 import com.security.apphoaqua.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +29,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static com.security.apphoaqua.core.response.ResponseStatus.*;
 
@@ -36,6 +42,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private static final String DEFAULT_SORT_FIELD = "createDate";
 
     @Override
     public ResponseBody<Object> createOrder(CreateOrderRequest request) {
@@ -215,6 +222,57 @@ public class OrderServiceImpl implements OrderService {
         }
         var response = new ResponseBody<>();
         response.setOperationSuccess(SUCCESS, orderResponse);
+        return response;
+    }
+
+    @Override
+    public ResponseBody<Object> getAllOrders(OrderSearchRequest request) {
+        var mapper = new ObjectMapper();
+        var json = mapper.createObjectNode();
+
+        Pageable pageable;
+
+        if (request.getSortBy() == null || request.getSortBy().isEmpty()) {
+            request.setSortBy(DEFAULT_SORT_FIELD);
+        }
+
+        if (request.getSortDirection() == null || request.getSortDirection().isEmpty()) {
+            request.setSortDirection("asc");
+        }
+
+        if (request.getSortDirection().equalsIgnoreCase("desc")) {
+            pageable = PageRequest.of(Integer.parseInt(request.getPageNumber()) - 1, Integer.parseInt(request.getPageSize()), Sort.by(request.getSortBy()).descending());
+        } else {
+            pageable = PageRequest.of(Integer.parseInt(request.getPageNumber()) - 1, Integer.parseInt(request.getPageSize()), Sort.by(request.getSortBy()).ascending());
+        }
+
+        Page<Order> listOrderPage = orderRepository.findAllOrder(pageable);
+
+        var orders = listOrderPage.getContent();
+        List<String> userIds = orders.stream().map(Order::getUserId).toList();
+
+        List<User> users = userRepository.findByIdIn(userIds);
+        Map<String, String> userMap = users.stream()
+                .collect(Collectors.toMap(User::getId, User::getFullName));
+
+        var orderResponse = orders.stream().map(order ->
+                OrderSearchResponse.builder()
+                        .userName(userMap.get(order.getUserId()))
+                        .orderCode(order.getOrderCode() == null ? "Đợi đặt hàng" : order.getOrderCode())
+                        .createdDate(order.getCreateDate().toString())
+                        .status(order.getStatus())
+                        .totalOrderAmount(order.getTotalOrderAmount())
+                        .profit(order.getProfit())
+                        .build());
+
+        json.putPOJO("page_number", request.getPageNumber());
+        json.putPOJO("total_records", listOrderPage.getTotalElements());
+        json.putPOJO("page_size", request.getPageSize());
+        json.putPOJO("list_order", orderResponse);
+        json.putPOJO("total_page", listOrderPage.getTotalPages());
+
+        var response = new ResponseBody<>();
+        response.setOperationSuccess(SUCCESS, json);
         return response;
     }
 
