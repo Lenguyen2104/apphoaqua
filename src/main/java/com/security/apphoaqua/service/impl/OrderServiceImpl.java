@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -173,8 +174,12 @@ public class OrderServiceImpl implements OrderService {
             return new ServiceSecurityException(HttpStatus.OK, USER_NOT_FOUND, errorMapping);
         });
         List<Order> ordersComplete = orderRepository.findAllByUserIdAndStatus(userId, StatusProduct.COMPLETE.getValue());
-        BigDecimal profitToday = ordersComplete.stream().map(Order::getProfit).reduce(BigDecimal.ZERO, BigDecimal::add);
         List<Order> ordersWaitForCompletion = orderRepository.findAllByUserIdAndStatus(userId, StatusProduct.WAIT_FOR_COMPLETION.getValue());
+        BigDecimal profitToday = ordersWaitForCompletion.stream()
+                .filter(order -> order.getCreateDate().toLocalDate().equals(LocalDate.now()))
+                .map(Order::getProfit)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
 
         BigDecimal pendingAmount = ordersWaitForCompletion.stream().map(Order::getTotalOrderAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
         TodayOrderResponse todayOrderResponse = TodayOrderResponse.builder()

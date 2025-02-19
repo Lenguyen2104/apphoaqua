@@ -50,11 +50,16 @@ public class ProductController {
         return ResponseEntity.ok(productService.uploadFile(request));
     }
 
-        @GetMapping(value = "/un_auth/products/download/original/{imageId}", produces = {MediaType.IMAGE_JPEG_VALUE})
-        @ResponseBody
-        public ResponseEntity<byte[]> downloadFileOriginalWithUrl(@PathVariable String imageId) throws IOException {
-            return ResponseEntity.ok(productService.downloadOriginalWithUrl(imageId));
-        }
+    @GetMapping(value = "/un_auth/products/download/original/{imageId}", produces = {MediaType.IMAGE_JPEG_VALUE})
+    @ResponseBody
+    public ResponseEntity<byte[]> downloadFileOriginalWithUrl(@PathVariable String imageId) throws IOException {
+        return ResponseEntity.ok(productService.downloadOriginalWithUrl(imageId));
+    }
+
+    @GetMapping("/un_auth/products/{user_id}")
+    public ResponseEntity<Object> getAllProductsForUser(@PathVariable("user_id") String userId) {
+        return ResponseEntity.ok(productService.getAllProductsForUser(userId));
+    }
 
     private <T> void validateRequest(T request) {
         var violations = validator.validate(request);

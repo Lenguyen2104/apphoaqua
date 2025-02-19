@@ -6,6 +6,7 @@ import com.security.apphoaqua.core.response.ResponseBody;
 import com.security.apphoaqua.dto.request.product.CreateProductRequest;
 import com.security.apphoaqua.dto.request.product.UpdateProductRequest;
 import com.security.apphoaqua.dto.request.product.UploadProductImageRequest;
+import com.security.apphoaqua.dto.response.product.ProductListForUserResponse;
 import com.security.apphoaqua.dto.response.product.ProductListResponse;
 import com.security.apphoaqua.entity.FileStorage;
 import com.security.apphoaqua.entity.Order;
@@ -15,6 +16,7 @@ import com.security.apphoaqua.exception.ServiceSecurityException;
 import com.security.apphoaqua.repository.FileStorageRepository;
 import com.security.apphoaqua.repository.OrderRepository;
 import com.security.apphoaqua.repository.ProductRepository;
+import com.security.apphoaqua.repository.UserRepository;
 import com.security.apphoaqua.service.ProductService;
 import com.security.apphoaqua.utils.FileHelperService;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +53,7 @@ public class ProductServiceImpl implements ProductService {
     private final FileStorageRepository fileStorageRepository;
     private final FileHelperService fileHelperService;
     private final OrderRepository orderRepository;
+    private final UserRepository userRepository;
 
     @Override
     public ResponseBody<Object> getAllProduct() {
@@ -230,6 +233,53 @@ public class ProductServiceImpl implements ProductService {
                 .contentLength(file.length())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(bytes).getBody();
+    }
+
+    @Override
+    public ResponseBody<Object> getAllProductsForUser(String userId) {
+        var productList = productRepository.findAll();
+        var user = userRepository.findById(userId).orElseThrow(() -> {
+            var errorMapping = ErrorData.builder()
+                    .errorKey1(USER_NOT_FOUND.getCode())
+                    .build();
+            return new ServiceSecurityException(HttpStatus.OK, USER_NOT_FOUND, errorMapping);
+        });
+        var productListResponse = productList.stream()
+                .map(product -> {
+                    String status;
+                    switch (product.getLevel()) {
+                        case 5:
+                            status = "active";
+                            break;
+                        case 3:
+                            status = user.isShareholderLevel2() ? "active" : "inactive";
+                            break;
+                        case 2:
+                            status = user.isShareholderLevel3() ? "active" : "inactive";
+                            break;
+                        case 1:
+                            status = user.isShareholderLevel4() ? "active" : "inactive";
+                            break;
+                        default:
+                            status = "inactive";
+                            break;
+                    }
+                    return ProductListForUserResponse.builder()
+                            .productId(product.getProductId())
+                            .productName(product.getProductName())
+                            .price(product.getPrice())
+                            .interestRate(product.getInterestRate())
+                            .imageId(product.getImageId())
+                            .level(product.getLevel())
+                            .createDate(product.getCreateDate())
+                            .status(status)
+                            .build();
+                })
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        var response = new ResponseBody<>();
+        response.setOperationSuccess(SUCCESS, productListResponse);
+        return response;
     }
 
     private void validateProductName(String productName, String productNamePresent) {

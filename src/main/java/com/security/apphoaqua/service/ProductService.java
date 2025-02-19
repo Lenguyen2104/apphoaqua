@@ -19,4 +19,6 @@ public interface ProductService {
     ResponseBody<Object> uploadFile(UploadProductImageRequest request);
 
     byte[] downloadOriginalWithUrl(String imageId) throws IOException;
+
+    ResponseBody<Object> getAllProductsForUser(String userId);
 }
