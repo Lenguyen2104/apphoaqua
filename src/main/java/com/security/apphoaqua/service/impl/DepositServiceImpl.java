@@ -106,7 +106,7 @@ public class DepositServiceImpl implements DepositService {
 
     @Override
     public ResponseBody<Object> getPendingDeposits(Pageable pageable) {
-        var pendingDeposits = depositRepository.findByStatus(AppovalStatusEnum.PENDING, pageable);
+        var pendingDeposits = depositRepository.findByStatusPage(AppovalStatusEnum.PENDING, pageable);
 
         var response = new ResponseBody<>();
         response.setOperationSuccess(SUCCESS, pendingDeposits);

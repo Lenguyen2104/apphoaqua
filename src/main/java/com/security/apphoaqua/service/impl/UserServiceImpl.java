@@ -7,12 +7,12 @@ import com.security.apphoaqua.core.response.ResponseBody;
 import com.security.apphoaqua.dto.request.users.UpdateUserRequest;
 import com.security.apphoaqua.dto.request.users.UserSearchRequest;
 import com.security.apphoaqua.dto.response.users.ShareholderLevelResponse;
+import com.security.apphoaqua.dto.response.users.TransactionDetailResponse;
 import com.security.apphoaqua.dto.response.users.UserDetailResponse;
-import com.security.apphoaqua.entity.Role;
-import com.security.apphoaqua.entity.User;
+import com.security.apphoaqua.entity.*;
+import com.security.apphoaqua.enumeration.AppovalStatusEnum;
 import com.security.apphoaqua.exception.ServiceSecurityException;
-import com.security.apphoaqua.repository.RoleRepository;
-import com.security.apphoaqua.repository.UserRepository;
+import com.security.apphoaqua.repository.*;
 import com.security.apphoaqua.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -26,9 +26,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.security.apphoaqua.core.response.ResponseStatus.*;
@@ -40,6 +39,9 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private static final String DEFAULT_SORT_FIELD = "createdDate";
     private final RoleRepository roleRepository;
+    private final BankRepository bankRepository;
+    private final WithdrawRepository withdrawRepository;
+    private final DepositRepository depositRepository;
 
     @Override
     public UserDetailsService userDetailsService() {
@@ -296,9 +298,24 @@ public class UserServiceImpl implements UserService {
                     .build();
             return new ServiceSecurityException(HttpStatus.OK, USER_NOT_FOUND, errorMapping);
         });
+
+        var userBank = bankRepository.findByUserId(userModel.getId()).orElseGet(Bank::new);
+
         BigDecimal currentAmount = userModel.getTotalAmount() == null ? BigDecimal.ZERO : userModel.getTotalAmount();
         userModel.setTotalAmount(currentAmount.add(safeConvert(amount)));
         userRepository.save(userModel);
+
+        Withdraw withdraw = new Withdraw();
+        withdraw.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+        withdraw.setUserId(userModel.getId());
+        withdraw.setAccountNumber(userBank.getAccountNumber());
+        withdraw.setAccountName(userBank.getAccountName());
+        withdraw.setBankName(userBank.getBankName());
+        withdraw.setAmount(safeConvert(amount));
+        withdraw.setStatus(AppovalStatusEnum.APPROVED);
+        withdraw.setCreatedDate(LocalDateTime.now());
+        withdrawRepository.save(withdraw);
+
         var response = new ResponseBody<>();
         response.setOperationSuccess(SUCCESS, userModel);
 
@@ -313,12 +330,27 @@ public class UserServiceImpl implements UserService {
                     .build();
             return new ServiceSecurityException(HttpStatus.OK, USER_NOT_FOUND, errorMapping);
         });
+
+        var userBank = bankRepository.findByUserId(userModel.getId()).orElseGet(Bank::new);
+
         BigDecimal currentAmount = userModel.getTotalAmount() == null ? BigDecimal.ZERO : userModel.getTotalAmount();
         if (currentAmount.compareTo(BigDecimal.ZERO) > 0) {
             currentAmount = currentAmount.subtract(safeConvert(amount)).max(BigDecimal.ZERO);
             userModel.setTotalAmount(currentAmount);
             userRepository.save(userModel);
         }
+
+        Deposit deposit = new Deposit();
+        deposit.setId(UUID.randomUUID().toString().replaceAll("-", ""));
+        deposit.setUserId(userModel.getId());
+        deposit.setAccountNumber(userBank.getAccountNumber());
+        deposit.setAccountName(userBank.getAccountName());
+        deposit.setBankName(userBank.getBankName());
+        deposit.setAmount(safeConvert(amount));
+        deposit.setStatus(AppovalStatusEnum.APPROVED);
+        deposit.setCreatedDate(LocalDateTime.now());
+        depositRepository.save(deposit);
+
         var response = new ResponseBody<>();
         response.setOperationSuccess(SUCCESS, userModel);
 
@@ -470,6 +502,42 @@ public class UserServiceImpl implements UserService {
 
         var response = new ResponseBody<>();
         response.setOperationSuccess(SUCCESS, json);
+        return response;
+    }
+
+    @Override
+    public ResponseBody<Object> getTransaction() {
+        String currentUserId = SecurityContext.getCurrentUserId();
+        User user = userRepository.findById(currentUserId).orElseThrow(() -> {
+            var errorMapping = ErrorData.builder()
+                    .errorKey1(USER_NOT_FOUND.getCode())
+                    .build();
+            return new ServiceSecurityException(HttpStatus.OK, USER_NOT_FOUND, errorMapping);
+        });
+        List<TransactionDetailResponse> transactions = new ArrayList<>();
+        List<Withdraw> withdraws = withdrawRepository.findByUserId(user.getId());
+        for (Withdraw withdraw : withdraws) {
+            transactions.add(TransactionDetailResponse.builder()
+                    .description("Trừ tiền từ tài khoản")
+                    .date(withdraw.getCreatedDate())
+                    .amount(withdraw.getAmount())
+                    .type("withdrawal")
+                    .status(withdraw.getStatus().toString().toLowerCase())
+                    .build());
+        }
+        List<Deposit> deposits = depositRepository.findByUserId(user.getId());
+        for (Deposit deposit : deposits) {
+            transactions.add(TransactionDetailResponse.builder()
+                    .description("Cộng tiền vào tài khoản")
+                    .date(deposit.getCreatedDate())
+                    .amount(deposit.getAmount())
+                    .type("deposit")
+                    .status(deposit.getStatus().toString().toLowerCase())
+                    .build());
+        }
+        transactions.sort(Comparator.comparing(TransactionDetailResponse::getDate).reversed());
+        var response = new ResponseBody<>();
+        response.setOperationSuccess(SUCCESS, transactions);
         return response;
     }
 

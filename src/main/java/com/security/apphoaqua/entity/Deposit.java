@@ -23,13 +23,13 @@ public class Deposit {
     private String userId;
     @Column(name = "status", length = 50, nullable = false)
     private AppovalStatusEnum status = AppovalStatusEnum.PENDING;
-    @Column(name = "account_number", length = 50, nullable = false)
+    @Column(name = "account_number", length = 50)
     private String accountNumber;
-    @Column(name = "account_name", length = 50, nullable = false)
+    @Column(name = "account_name", length = 50)
     private String accountName;
-    @Column(name = "bank_name", length = 50, nullable = false)
+    @Column(name = "bank_name", length = 50)
     private String bankName;
-    @Column(name = "amount", nullable = false)
+    @Column(name = "amount")
     private BigDecimal amount;
     @Column(name = "created_date", nullable = false)
     private LocalDateTime createdDate;

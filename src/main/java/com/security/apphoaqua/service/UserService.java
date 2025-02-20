@@ -28,4 +28,6 @@ public interface UserService {
     ResponseBody<Object> getCurrentUserDetail();
 
     ResponseBody<Object> getAllAdmin(UserSearchRequest request);
+
+    ResponseBody<Object> getTransaction();
 }

@@ -75,6 +75,11 @@ public class UserController {
         return ResponseEntity.ok(userService.getShareholderLevel());
     }
 
+    @GetMapping("/user/transaction")
+    public ResponseEntity<Object> getTransaction() {
+        return ResponseEntity.ok(userService.getTransaction());
+    }
+
     @PostMapping("/admin/all")
     public ResponseEntity<Object> getAllAdmin(@RequestBody UserSearchRequest request) {
         this.validateRequest(request);

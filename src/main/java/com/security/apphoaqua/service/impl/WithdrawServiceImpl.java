@@ -5,7 +5,6 @@ import com.security.apphoaqua.core.response.ErrorData;
 import com.security.apphoaqua.core.response.ResponseBody;
 import com.security.apphoaqua.dto.request.withdraw.CreateWithdrawRequest;
 import com.security.apphoaqua.dto.response.bank.BankInfoToWithdrawResponse;
-import com.security.apphoaqua.entity.Bank;
 import com.security.apphoaqua.entity.User;
 import com.security.apphoaqua.entity.Withdraw;
 import com.security.apphoaqua.enumeration.AppovalStatusEnum;
@@ -123,7 +122,7 @@ public class WithdrawServiceImpl implements WithdrawService {
 
     @Override
     public ResponseBody<Object> getPendingWithdraws(Pageable pageable) {
-        var pendingWithdraws = withdrawRepository.findByStatus(AppovalStatusEnum.PENDING, pageable);
+        var pendingWithdraws = withdrawRepository.findByStatusPage(AppovalStatusEnum.PENDING, pageable);
 
         var response = new ResponseBody<>();
         response.setOperationSuccess(SUCCESS, pendingWithdraws);
